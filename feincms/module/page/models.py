@@ -260,17 +260,6 @@ class Page(Base):
         return pages.count() > self.level
     is_active.short_description = _('is active')
 
-    def are_ancestors_active(self):
-        """
-        Check whether all ancestors of this page are active
-        """
-
-        if self.is_root_node():
-            return True
-
-        queryset = PageManager.apply_active_filters(self.get_ancestors())
-        return queryset.count() >= self.level
-
     def active_children(self):
         """
         Returns a queryset describing all active children of the current page.
@@ -448,7 +437,7 @@ class Page(Base):
         Checks whether any ancestors are actually inaccessible (ie. not
         inactive or expired) and raise a 404 if so.
         """
-        if not self.are_ancestors_active():
+        if not self.is_active():
             raise Http404()
 
     def get_redirect_to_target(self, request):
