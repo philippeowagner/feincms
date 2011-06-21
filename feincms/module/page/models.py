@@ -342,13 +342,6 @@ class Page(Base):
 
         return self.redirect_to or self._cached_url
 
-    def get_siblings_and_self(page):
-        """
-        As the name says.
-        """
-
-        return page.get_siblings(include_self=True)
-
     def cache_key(self):
         """
         Return a string that may be used as cache key for the current page.
