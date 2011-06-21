@@ -127,13 +127,6 @@ class PageManager(models.Manager, ActiveAwareContentManagerMixin):
                 raise Http404
             raise
 
-    def page_for_path_or_404(self, path):
-        """
-        Wrapper for page_for_path which raises a Http404 if no page
-        has been found for the passed path.
-        """
-        return self.page_for_path(path, raise404=True)
-
     def best_match_for_path(self, path, raise404=False):
         """
         Return the best match for a path. If the path as given is unavailable,
@@ -189,47 +182,23 @@ class PageManager(models.Manager, ActiveAwareContentManagerMixin):
 
         return self.in_navigation().filter(parent__isnull=True)
 
-    def for_request(self, request, raise404=False):
+    def for_request(self, request, raise404=False, best_match=False):
         """
         Convenience wrapper for ``page_for_path`` which calls ``setup_request``
         if a page has been found right away (required by FeinCMS anyway).
         """
 
-        page = self.page_for_path(request.path, raise404)
-        page.setup_request(request)
-        return page
-
-    def for_request_or_404(self, request):
-        """
-        Convenience wrapper for ``for_request`` which always raises a 404 if
-        a page could not be found.
-        """
-
-        return self.for_request(request, raise404=True)
-
-    def best_match_for_request(self, request, raise404=False):
-        """
-        Convenience wrapper for ``best_match_for_path``. Calls ``setup_request``
-        if a page has been found.
-        """
-
-        page = self.best_match_for_path(request.path, raise404=raise404)
-        page.setup_request(request)
-        return page
-
-    def from_request(self, request, best_match=False):
-        """
-        ``setup_request`` stores the current page object as an attribute on the
-        request itself. This method uses the cached copy if available instead of
-        running another determination run.
-        """
-
         if hasattr(request, '_feincms_page'):
-            return request._feincms_page
+            page = request._feincms_page
+        else:
+            if best_match:
+                page = self.best_match_for_path(request.path, raise404=raise404)
+            else:
+                page = self.page_for_path(request.path, raise404=raise404)
 
-        if best_match:
-            return self.best_match_for_request(request, raise404=False)
-        return self.for_request(request)
+        page.setup_request(request)
+        return page
+
 
 PageManager.add_to_active_filters( Q(active=True) )
 
