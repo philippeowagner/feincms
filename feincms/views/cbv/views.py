@@ -1,4 +1,5 @@
 from django.http import Http404
+from django.template import Template
 from django.views.generic import TemplateView
 
 from feincms import settings
@@ -27,6 +28,10 @@ class Handler(TemplateView):
     def get_template_names(self):
         if self.template_name is None:
             return [self.page.template.path]
+
+        if isinstance(self.template_name, Template):
+            return self.template_name
+
         return [self.template_name]
 
     def get_context_data(self, **kwargs):
