@@ -29,7 +29,10 @@ class Handler(TemplateView):
         if self.template_name is None:
             return [self.page.template.path]
 
-        if isinstance(self.template_name, Template):
+        elif isinstance(self.template_name, Template):
+            return self.template_name
+
+        elif isinstance(self.template_name, (list, tuple)):
             return self.template_name
 
         return [self.template_name]
